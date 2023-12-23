@@ -63,14 +63,51 @@ const logoutUser = asyncHandler(async (req, res) => {
 // @route: POST /api/users/profile
 // @access: Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "Get User Profile", success: true });
+  const user = await User.findById(req.user._id).select("-password");
+
+  res.status(200).json({ _id: user._id, name: user.name, email: user.email });
 });
 
 // @desc: Update user profile
 // @route: PUT /api/users/profile
 // @access: Private
 const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  console.log(user);
+  if (user) {
+    const { name, email, password } = req.body;
+    user.name = name || user.name;
+    user.email = email || user.email;
+    if (password) {
+      user.password = password;
+    }
+    const updatedUser = await user.save();
+    console.log(updatedUser);
+    generateToken(res, updatedUser._id);
+    res.status(201).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+    });
+    return;
+  }
   res.status(200).json({ message: "upadate user profile", success: true });
 });
+const resetPassword = asyncHandler(async (req, res) => {
+  console.log(req.body.email);
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    res.status(200).json({ user: user, message: "Reset link sent" });
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
 
-export { login, registerUser, logoutUser, getUserProfile, updateUserProfile };
+export {
+  login,
+  registerUser,
+  logoutUser,
+  getUserProfile,
+  updateUserProfile,
+  resetPassword,
+};

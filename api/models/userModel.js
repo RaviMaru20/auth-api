@@ -8,6 +8,12 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    otp_email: {
+      type: Number,
+    },
+    otp_expiry: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
